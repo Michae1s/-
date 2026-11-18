@@ -52,7 +52,7 @@ let pendingNext=null;
 function setEvent(phase,title,text,choices){
   $("phaseLabel").textContent=phase;$("eventTitle").textContent=title;$("eventText").textContent=text;
   $("choices").innerHTML="";$("resultBox").classList.add("hidden");$("choices").classList.remove("hidden");
-  choices.forEach(c=>{let b=document.createElement("button");b.className="choice";b.textContent=c.label;b.onclick=c.action;$("choices").append(b)});
+  (choices || []).forEach(c=>{let b=document.createElement("button");b.className="choice";b.textContent=c.label;b.onclick=c.action;$("choices").append(b)});
 }
 function changeStats(changes){
   let labels=[];
@@ -108,7 +108,7 @@ function renderEvent(){
   if(game.age>=50 && game.phase!=="ended"){endLife()}
 }
 function personalEvent(){
-  setEvent("아카데미 · 개인 활동","자신의 능력을 발전시킬 방법을 선택하세요.",[
+  setEvent("아카데미 · 개인 활동","개인 활동","자신의 능력을 발전시킬 방법을 선택하세요.",[
     {label:"약점 보완: 가장 낮은 능력치 +3, 가장 높은 능력치 -2",action:()=>{let lo=game.stats.indexOf(Math.min(...game.stats)),hi=game.stats.indexOf(Math.max(...game.stats));let c=changeStats({[statNames[lo]]:3,[statNames[hi]]:-2});present("약점 보완", "부족한 부분을 채우는 데 집중했습니다.",c);nextAfterResult(()=>{game.phase="academy";renderEvent()})}},
     {label:"강점 특화: 가장 높은 능력치 +4, 가장 낮은 능력치 -3",action:()=>{let lo=game.stats.indexOf(Math.min(...game.stats)),hi=game.stats.indexOf(Math.max(...game.stats));let c=changeStats({[statNames[hi]]:4,[statNames[lo]]:-3});present("강점 특화","자신 있는 분야를 더욱 갈고닦았습니다.",c);nextAfterResult(()=>{game.phase="academy";renderEvent()})}},
     {label:"자유 연구: 원하는 능력치 +2, 다른 능력치 -1",action:()=>{let i=prompt("올릴 능력치를 선택하세요: 체력, 힘, 지능, 민첩, 매력, 행운");if(!statNames.includes(i))return;let other=statNames.filter(n=>n!==i)[Math.floor(Math.random()*5)];let c=changeStats({[i]:2,[other]:-1});present("자유 연구", "관심 분야를 연구했습니다.",c);nextAfterResult(()=>{game.phase="academy";renderEvent()})}}
@@ -116,7 +116,7 @@ function personalEvent(){
 }
 function contestEvent(){
   let tiers=[["최상위 대회",.1,40,-20],["상위 대회",.3,30,-15],["중위 대회",.55,20,-10],["하위 대회",.8,10,-5]];
-  setEvent("아카데미 · 대회 참가","어느 수준의 대회에 참가하겠습니까?",tiers.map(t=>({label:`${t[0]} (성공 확률 ${Math.round(t[1]*100)}%)`,action:()=>{let ok=Math.random()<t[1],d=ok?t[2]:t[3];game.fame=Math.max(0,game.fame+d);present(ok?"대회에서 성과를 거뒀다":"대회에서 아쉬운 결과를 얻었다",ok?"뛰어난 실력을 인정받았습니다.":"기대만큼의 결과를 얻지 못했습니다.",[`명성 ${d>0?"+":""}${d}`]);nextAfterResult(()=>{game.phase="academy";renderEvent()})}})));
+  setEvent("아카데미 · 대회 참가","대회 참가","어느 수준의 대회에 참가하겠습니까?",tiers.map(t=>({label:`${t[0]} (성공 확률 ${Math.round(t[1]*100)}%)`,action:()=>{let ok=Math.random()<t[1],d=ok?t[2]:t[3];game.fame=Math.max(0,game.fame+d);present(ok?"대회에서 성과를 거뒀다":"대회에서 아쉬운 결과를 얻었다",ok?"뛰어난 실력을 인정받았습니다.":"기대만큼의 결과를 얻지 못했습니다.",[`명성 ${d>0?"+":""}${d}`]);nextAfterResult(()=>{game.phase="academy";renderEvent()})}})));
 }
 function socialEvent(){
   let type=Math.floor(Math.random()*3);
@@ -126,20 +126,20 @@ function socialEvent(){
   nextAfterResult(()=>{game.phase="academy";renderEvent()});
 }
 function dropoutEvent(){
-  setEvent("아카데미 · 중퇴 고민","학업을 계속할까요, 아니면 아카데미를 떠나 모험가가 될까요?",[
+  setEvent("아카데미 · 중퇴 고민","중퇴 여부 결정","학업을 계속할까요, 아니면 아카데미를 떠나 모험가가 될까요?",[
     {label:"아카데미에 남는다",action:()=>{present("학업을 이어가기로 했다","남은 학업에 집중하기로 했습니다.",[]);nextAfterResult(()=>{game.phase="academy";renderEvent()})}},
     {label:"중퇴하고 모험가가 된다",action:()=>{game.career="초급 모험가";game.phase="adventurer";present("아카데미 중퇴","아카데미를 떠나 모험가의 길을 선택했습니다.",[]);nextAfterResult(renderEvent)}}
   ]);
 }
 function professorEvent(){
   let a=Math.floor(Math.random()*6),b;do{b=Math.floor(Math.random()*6)}while(a===b);
-  setEvent("아카데미 · 교수의 특별 지도","교수가 특별 지도를 제안했습니다. 두 능력치의 수치를 맞바꾸고 직업을 바꿀 수 있습니다.",[
+  setEvent("아카데미 · 교수의 특별 지도","교수의 특별 지도","교수가 특별 지도를 제안했습니다. 두 능력치의 수치를 맞바꾸고 직업을 바꿀 수 있습니다.",[
     {label:"특별 지도를 받는다",action:()=>{let x=game.stats[a];game.stats[a]=game.stats[b];game.stats[b]=x;let newJob=prompt("희망 직업을 입력하세요: "+Object.keys(jobs).join(", "),game.job);if(newJob&&jobs[newJob])game.job=newJob;present("특별 지도 완료",`${statNames[a]}와 ${statNames[b]}의 수치를 교환했습니다. 직업: ${game.job}`,[`${statNames[a]} ↔ ${statNames[b]}`]);nextAfterResult(()=>{game.phase="academy";renderEvent()})}},
     {label:"제안을 거절한다",action:()=>{present("평소처럼 수업을 이어간다","현재의 길을 유지하기로 했습니다.",[]);nextAfterResult(()=>{game.phase="academy";renderEvent()})}}
   ]);
 }
 function scholarshipEvent(){
-  setEvent("아카데미 · 장학금","장학금을 신청할 기회가 생겼습니다. 신청 성공 확률은 50%입니다.",[
+  setEvent("아카데미 · 장학금","장학금 신청","장학금을 신청할 기회가 생겼습니다. 신청 성공 확률은 50%입니다.",[
     {label:"장학금을 신청한다",action:()=>{let ok=Math.random()<.5;if(ok){game.gold+=30;present("장학금 선정","성실한 노력을 인정받아 장학금을 받았습니다.",["금화 +30"])}else{let c=changeStats({행운:-7});present("장학금 탈락","아쉽게 선정되지 못해 자신감이 조금 떨어졌습니다.",c)}nextAfterResult(()=>{game.phase="academy";renderEvent()})}},
     {label:"신청하지 않는다",action:()=>{present("신청하지 않았다","이번에는 장학금 신청을 건너뛰었습니다.",[]);nextAfterResult(()=>{game.phase="academy";renderEvent()})}}
   ]);
