@@ -1,0 +1,39 @@
+* { box-sizing: border-box; }
+:root { color-scheme: dark; }
+body {
+  margin: 0; min-height: 100vh; color: #f5ead5;
+  background: radial-gradient(ellipse at top, #40301d 0%, #1c1712 48%, #100e0c 100%);
+  font-family: system-ui, -apple-system, "Noto Sans KR", sans-serif;
+}
+.app { width: min(100% - 28px, 720px); margin: 0 auto; padding: 34px 0 24px; }
+.hero { text-align: center; padding: 28px 12px 30px; }
+.eyebrow { color: #c9a96e; letter-spacing: .2em; font-size: 11px; font-weight: 800; }
+h1 { margin: 16px 0 10px; font-size: clamp(34px, 8vw, 58px); line-height: 1.18; letter-spacing: -.06em; }
+h1 span { color: #e5bd72; }
+.tagline, .muted { color: #b8aa96; }
+.tagline { font-size: 14px; }
+.panel { background: #211b15eF; border: 1px solid #6f5735; border-radius: 18px; padding: 22px; box-shadow: 0 16px 40px #0005; margin-bottom: 18px; }
+h2 { margin: 0 0 8px; font-size: 21px; }
+h3 { margin: 0; font-size: 16px; }
+.muted { font-size: 13px; line-height: 1.6; }
+label { display: block; margin: 20px 0 8px; color: #e8d5b5; font-size: 13px; }
+select { width: 100%; padding: 13px; border-radius: 10px; border: 1px solid #806641; background: #17130f; color: #fff0d5; font-size: 15px; }
+.stats-head { display: flex; align-items: center; justify-content: space-between; margin: 22px 0 12px; }
+.total { color: #e5bd72; font-size: 13px; font-weight: 800; }
+.stat { display: grid; grid-template-columns: 64px 1fr 34px; gap: 10px; align-items: center; margin: 12px 0; font-size: 13px; }
+.track { height: 9px; background: #403326; border-radius: 99px; overflow: hidden; }
+.fill { height: 100%; background: linear-gradient(90deg, #9b713b, #e5bd72); border-radius: 99px; }
+.stat strong { text-align: right; color: #f5d99f; }
+.actions { display: grid; grid-template-columns: 1fr 1.3fr; gap: 10px; margin-top: 24px; }
+button { border: 0; border-radius: 11px; padding: 14px 10px; font-size: 14px; font-weight: 800; cursor: pointer; }
+.primary { background: linear-gradient(135deg, #e6c27d, #b98945); color: #21170d; }
+.secondary { background: #382b1e; color: #f0d9b0; border: 1px solid #806641; }
+button:active { transform: scale(.99); }
+.notice { color: #b8aa96; font-size: 12px; min-height: 18px; margin-bottom: 0; }
+.hidden { display: none; }
+.life { border-color: #b18a50; }
+footer { text-align: center; color: #766957; font-size: 11px; padding: 14px; letter-spacing: .12em; }
+@media (max-width: 420px) {
+  .panel { padding: 18px; }
+  .actions { grid-template-columns: 1fr; }
+}
