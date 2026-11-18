@@ -50,9 +50,26 @@ function present(title,text,changes=[]){
 }
 let pendingNext=null;
 function setEvent(phase,title,text,choices){
-  $("phaseLabel").textContent=phase;$("eventTitle").textContent=title;$("eventText").textContent=text;
-  $("choices").innerHTML="";$("resultBox").classList.add("hidden");$("choices").classList.remove("hidden");
-  (choices || []).forEach(c=>{let b=document.createElement("button");b.className="choice";b.textContent=c.label;b.onclick=c.action;$("choices").append(b)});
+  // Support both 4-argument calls (phase, title, description, choices)
+  // and legacy 3-argument calls (phase, description, choices).
+  if (choices === undefined) {
+    choices = text;
+    text = title;
+    title = phase;
+  }
+  $("phaseLabel").textContent=phase;
+  $("eventTitle").textContent=title;
+  $("eventText").textContent=typeof text === "string" ? text : "";
+  $("choices").innerHTML="";
+  $("resultBox").classList.add("hidden");
+  $("choices").classList.remove("hidden");
+  (Array.isArray(choices) ? choices : []).forEach(c=>{
+    let b=document.createElement("button");
+    b.className="choice";
+    b.textContent=typeof c.label === "string" ? c.label : "선택하기";
+    b.onclick=typeof c.action === "function" ? c.action : ()=>{};
+    $("choices").append(b);
+  });
 }
 function changeStats(changes){
   let labels=[];
