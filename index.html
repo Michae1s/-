@@ -1,45 +1,28 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#17130f">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#11131b">
   <title>나 혼자만 전설의 용사</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="app">
-    <header class="hero">
-      <p class="eyebrow">ELDORIA · A LIFE ADVENTURE</p>
-      <h1>나 혼자만<br><span>전설의 용사</span></h1>
-      <p class="tagline">15살, 당신의 새로운 인생이 시작된다.</p>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-mark">ELDORIA <span>· A LIFE ADVENTURE</span></div>
+      <button class="ghost small" id="resetBtn">새 인생</button>
     </header>
-
-    <section class="panel">
-      <h2>새로운 인생 시작하기</h2>
-      <p class="muted">직업을 선택하면 기본 능력치가 정해집니다.</p>
-      <label for="job">시작 직업</label>
-      <select id="job"></select>
-      <div class="stats-head">
-        <h3>능력치</h3>
-        <span id="total" class="total">합계 100</span>
-      </div>
-      <div id="stats" class="stats"></div>
-      <div class="actions">
-        <button id="reroll" class="secondary">능력치 다시 뽑기</button>
-        <button id="start" class="primary">15살 인생 시작</button>
-      </div>
-      <p id="notice" class="notice" aria-live="polite">직업을 선택하고 새로운 인생을 준비하세요.</p>
-    </section>
-
-    <section id="life" class="panel life hidden">
-      <h2>당신의 인생</h2>
-      <p id="lifeText"></p>
-      <p class="muted">현재 버전은 직업과 시작 능력치를 저장하는 첫 번째 프로토타입입니다. 다음 단계에서 사건과 선택지를 추가할 예정입니다.</p>
-      <button id="newLife" class="secondary">새로운 인생 준비하기</button>
-    </section>
-    <footer>ELDORIA · 나 혼자만 전설의 용사</footer>
-  </main>
+    <main>
+      <section class="hero">
+        <p class="eyebrow">YOUR LEGEND BEGINS</p>
+        <h1>나 혼자만 <em>전설의 용사</em></h1>
+        <p class="subtitle">15살, 당신의 새로운 인생이 시작된다.</p>
+      </section>
+      <section id="game" class="panel"></section>
+    </main>
+    <footer>ELDORIA · 당신의 선택이 한 사람의 전설을 만든다</footer>
+  </div>
   <script src="app.js"></script>
 </body>
 </html>
