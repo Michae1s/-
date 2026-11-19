@@ -9,7 +9,7 @@ const jobs = {
 
 const statNames=["체력","힘","지능","민첩","매력","행운"];
 const rankNames=["견습 모험가","정식 모험가","숙련 모험가","베테랑 모험가","전설 모험가"];
-const rankFame=[0,100,200,300,400];
+const rankFame=[0,50,100,150,200];
 const rankExamBase=[60,50,40,30];
 const rankExamFee=[20,35,50,65];
 const places=[
@@ -298,6 +298,7 @@ function setEvent(phase,title,text,choices){
     const meta=[];
     if(Number.isFinite(c.chance)) meta.push(`성공 ${Math.round(c.chance)}%`);
     if(c.gainText) meta.push(c.gainText);
+    if(c.riskText) meta.push(c.riskText);
     b.innerHTML=`<span class="choice-main"></span>${meta.length?`<span class="choice-meta">${meta.join(" · ")}</span>`:""}`;
     b.querySelector('.choice-main').textContent=label;
     b.onclick=typeof c.action === "function" ? c.action : ()=>{};
@@ -343,7 +344,7 @@ function renderEvent(){
     }}));
     setEvent(`${game.age}세 · 아카데미 ${game.year+1}년 차`,"올해 어떤 수업을 듣겠습니까?","각 수업은 성공 확률 90%이며, 성공 시 표시된 능력치가 상승합니다.",courseChoices);
   } else if(game.phase==="academyRandom"){
-    const academyEvents=[personalEvent,contestEvent,socialEvent,professorEvent,scholarshipEvent];
+    const academyEvents=[personalEvent,contestEvent,friendEvent,rivalEvent,bondEvent,professorEvent,scholarshipEvent];
     academyEvents[Math.floor(Math.random()*academyEvents.length)]();
   } else if(game.phase==="careerChoice"){
     setEvent("20세 · 졸업","아카데미를 졸업했습니다. 앞으로 어떤 길을 걷겠습니까?",[
@@ -400,20 +401,51 @@ function personalEvent(){
   ]);
 }
 function contestEvent(){
-  let tiers=[["최상위 대회",.1,40,-20],["상위 대회",.3,30,-15],["중위 대회",.55,20,-10],["하위 대회",.8,10,-5]];
-  setEvent("아카데미 · 대회 참가","대회 참가","어느 수준의 대회에 참가하겠습니까?",tiers.map(t=>({label:`${t[0]} (성공 확률 ${Math.round(t[1]*100)}%)`,action:()=>{let ok=Math.random()<t[1],d=ok?t[2]:t[3];game.fame=Math.max(0,game.fame+d);present(ok?"대회에서 성과를 거뒀다":"대회에서 아쉬운 결과를 얻었다",ok?"뛰어난 실력을 인정받았습니다.":"기대만큼의 결과를 얻지 못했습니다.",[`명성 ${d>0?"+":""}${d}`]);nextAfterResult(()=>{game.phase="academy";renderEvent()})}})));
+  const tiers=[
+    {name:"최상위 대회",chance:10,gold:50,fame:40,lossFame:20,damage:3},
+    {name:"상위 대회",chance:30,gold:35,fame:30,lossFame:15,damage:2},
+    {name:"중위 대회",chance:55,gold:20,fame:20,lossFame:10,damage:1},
+    {name:"하위 대회",chance:80,gold:10,fame:10,lossFame:5,damage:0}
+  ];
+  setEvent("아카데미 · 대회 참가","대회 참가","대회마다 성공 확률과 보상이 다릅니다. 실패하면 명성을 잃고, 일부 대회에서는 능력치도 하락합니다.",tiers.map(t=>({
+    label:t.name,
+    chance:t.chance,
+    gainText:`성공 보상: 금화 +${t.gold} · 명성 +${t.fame}`,
+    riskText:`실패 페널티: 명성 -${t.lossFame}${t.damage?` · 무작위 능력치 -${t.damage}`:""}`,
+    action:()=>{
+      const ok=Math.random()<t.chance/100;
+      if(ok){
+        game.gold+=t.gold;game.fame+=t.fame;
+        present("대회에서 성과를 거뒀다",`${t.name}에서 좋은 성적을 거두었습니다.`,[`금화 +${t.gold}`,`명성 +${t.fame}`]);
+      }else{
+        game.fame=Math.max(0,game.fame-t.lossFame);
+        const changes=t.damage?changeStats({[statNames[Math.floor(Math.random()*6)]]:-t.damage}):[];
+        present("대회에서 아쉬운 결과를 얻었다",`${t.name}에서 기대한 성과를 거두지 못했습니다.`,[`명성 -${t.lossFame}`,...changes]);
+      }
+      nextAfterResult(()=>{game.phase="academy";renderEvent()});
+    }
+  })));
 }
-function socialEvent(){
-  let type=Math.floor(Math.random()*3);
-  if(type===0){let ok=Math.random()<.8;if(ok){let picks=[...Array(6).keys()].sort(()=>Math.random()-.5).slice(0,3);let changes={};picks.forEach(i=>changes[statNames[i]]=1);let c=changeStats(changes);present("새로운 친구","친구와 함께하며 서로에게 좋은 영향을 받았습니다.",c)}else{let i=Math.floor(Math.random()*6),c=changeStats({[statNames[i]]:-1});present("친구와의 오해","작은 오해가 생겨 기운이 빠졌습니다.",c)}}
-  else if(type===1){let ok=Math.random()<.5,i=Math.floor(Math.random()*6),c=changeStats({[statNames[i]]:ok?5:-5});present(ok?"경쟁에서 성장했다":"경쟁에서 밀렸다",ok?"경쟁자의 존재가 자극이 되었습니다.":"경쟁에서 아쉬운 결과를 얻었습니다.",c)}
-  else{let i=Math.floor(Math.random()*6),c=changeStats({[statNames[i]]:1});present("특별한 인연","뜻밖의 만남이 좋은 자극이 되었습니다.",c)}
+function friendEvent(){
+  const ok=Math.random()<.8;
+  if(ok){let picks=[...Array(6).keys()].sort(()=>Math.random()-.5).slice(0,3);let changes={};picks.forEach(i=>changes[statNames[i]]=1);let c=changeStats(changes);present("새로운 친구","친구와 함께하며 서로에게 좋은 영향을 받았습니다.",c)}
+  else{let i=Math.floor(Math.random()*6),c=changeStats({[statNames[i]]:-1});present("친구와의 오해","작은 오해가 생겨 기운이 빠졌습니다.",c)}
+  nextAfterResult(()=>{game.phase="academy";renderEvent()});
+}
+function rivalEvent(){
+  const ok=Math.random()<.5,i=Math.floor(Math.random()*6),c=changeStats({[statNames[i]]:ok?5:-5});
+  present(ok?"경쟁에서 성장했다":"경쟁에서 밀렸다",ok?"경쟁자의 존재가 자극이 되었습니다.":"경쟁에서 아쉬운 결과를 얻었습니다.",c);
+  nextAfterResult(()=>{game.phase="academy";renderEvent()});
+}
+function bondEvent(){
+  const i=Math.floor(Math.random()*6),c=changeStats({[statNames[i]]:1});
+  present("특별한 인연","뜻밖의 만남이 좋은 자극이 되었습니다.",c);
   nextAfterResult(()=>{game.phase="academy";renderEvent()});
 }
 function professorEvent(){
   let a=Math.floor(Math.random()*6),b;do{b=Math.floor(Math.random()*6)}while(a===b);
   setEvent("아카데미 · 교수의 특별 지도","교수의 특별 지도","교수가 두 능력치의 수치를 교환하고 직업을 변경할 기회를 제안했습니다. 원하는 직업을 선택하세요.",[
-    ...Object.keys(jobs).map(newJob=>({label:`${newJob}(으)로 변경`,action:()=>{let x=game.stats[a];game.stats[a]=game.stats[b];game.stats[b]=x;game.job=newJob;present("특별 지도 완료",`${statNames[a]}와 ${statNames[b]}의 수치를 교환하고 직업을 ${game.job}(으)로 변경했습니다.`,[`${statNames[a]} ↔ ${statNames[b]}`,`직업: ${game.job}`]);nextAfterResult(()=>{game.phase="academy";renderEvent()})}})),
+    ...Object.keys(jobs).filter(newJob=>newJob!==game.job).map(newJob=>({label:`${newJob}(으)로 변경`,action:()=>{let x=game.stats[a];game.stats[a]=game.stats[b];game.stats[b]=x;game.job=newJob;present("특별 지도 완료",`${statNames[a]}와 ${statNames[b]}의 수치를 교환하고 직업을 ${game.job}(으)로 변경했습니다.`,[`${statNames[a]} ↔ ${statNames[b]}`,`직업: ${game.job}`]);nextAfterResult(()=>{game.phase="academy";renderEvent()})}})),
     {label:"제안을 거절한다",action:()=>{present("평소처럼 수업을 이어간다","현재의 길을 유지하기로 했습니다.",[]);nextAfterResult(()=>{game.phase="academy";renderEvent()})}}
   ]);
 }
