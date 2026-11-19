@@ -45,7 +45,14 @@ function weightedPick(items,weights){
  for(let i=0;i<items.length;i++){roll-=weights[i];if(roll<=0)return items[i]}
  return items[items.length-1];
 }
+function normalizeStats(){
+ if(!game) return;
+ const base=jobs[game.job]||jobs["전사"];
+ if(!Array.isArray(game.stats)) game.stats=statNames.map((n,i)=>Number(game.stats?.[n] ?? base[i]));
+ game.stats=statNames.map((n,i)=>{const v=Number(game.stats[i]);return Number.isFinite(v)?Math.max(1,Math.min(60,v)):base[i]});
+}
 function effectiveStats(){
+ normalizeStats();
  const out=[...game.stats];
  (game.inventory||[]).forEach(item=>{
    item.bonuses.forEach(([name,value])=>{const i=statNames.indexOf(name);if(i>=0)out[i]+=value});
@@ -226,10 +233,12 @@ function variedStats(base){
   return a;
 }
 function renderStats(target,arr){
-  $(target).innerHTML=statNames.map((n,i)=>`<div class="stat"><span>${n}</span><b>${arr[i]}</b></div>`).join("");
+  const safe=Array.isArray(arr)?arr:[];
+  $(target).innerHTML=statNames.map((n,i)=>{const v=Number(safe[i]);return `<div class="stat"><span>${n}</span><b>${Number.isFinite(v)?v:0}</b></div>`}).join("");
 }
 function refreshPreview(){previewStats=variedStats(jobs[chosenJob]);renderStats("startStats",previewStats)}
 function updateStatus(){
+  normalizeStats();
   $("ageLabel").textContent=game.age+"세";$("careerLabel").textContent=game.career;
   $("goldLabel").textContent=game.gold;$("fameLabel").textContent=game.fame;
   $("statusAge").textContent=game.age+"세";$("statusJob").textContent=game.job;
@@ -265,6 +274,7 @@ $("academyDropoutBtn").addEventListener("click",()=>{
     game.career=rankLabel(); game.phase='adventurer';
     present('아카데미 중퇴','아카데미를 떠나 모험가의 길을 선택했습니다.',[]);
     nextAfterResult(renderEvent);
+    updateStatus();
   }
 });
 function setEvent(phase,title,text,choices){
@@ -333,8 +343,8 @@ function renderEvent(){
     }}));
     setEvent(`${game.age}세 · 아카데미 ${game.year+1}년 차`,"올해 어떤 수업을 듣겠습니까?","각 수업은 성공 확률 90%이며, 성공 시 표시된 능력치가 상승합니다.",courseChoices);
   } else if(game.phase==="academyRandom"){
-    const r=Math.floor(Math.random()*6);
-    if(r===0) personalEvent(); else if(r===1) contestEvent(); else if(r===2) socialEvent(); else if(r===3) professorEvent(); else scholarshipEvent();
+    const academyEvents=[personalEvent,contestEvent,socialEvent,professorEvent,scholarshipEvent];
+    academyEvents[Math.floor(Math.random()*academyEvents.length)]();
   } else if(game.phase==="careerChoice"){
     setEvent("20세 · 졸업","아카데미를 졸업했습니다. 앞으로 어떤 길을 걷겠습니까?",[
       {label:"아카데미 교수",action:()=>{game.career="아카데미 교수";game.phase="professor";present("교수 임용","후배들을 가르치며 학문을 이어갑니다.",[]);nextAfterResult(renderEvent)}},
@@ -399,12 +409,6 @@ function socialEvent(){
   else if(type===1){let ok=Math.random()<.5,i=Math.floor(Math.random()*6),c=changeStats({[statNames[i]]:ok?5:-5});present(ok?"경쟁에서 성장했다":"경쟁에서 밀렸다",ok?"경쟁자의 존재가 자극이 되었습니다.":"경쟁에서 아쉬운 결과를 얻었습니다.",c)}
   else{let i=Math.floor(Math.random()*6),c=changeStats({[statNames[i]]:1});present("특별한 인연","뜻밖의 만남이 좋은 자극이 되었습니다.",c)}
   nextAfterResult(()=>{game.phase="academy";renderEvent()});
-}
-function dropoutEvent(){
-  setEvent("아카데미 · 중퇴 고민","중퇴 여부 결정","학업을 계속할까요, 아니면 아카데미를 떠나 모험가가 될까요?",[
-    {label:"아카데미에 남는다",action:()=>{present("학업을 이어가기로 했다","남은 학업에 집중하기로 했습니다.",[]);nextAfterResult(()=>{game.phase="academy";renderEvent()})}},
-    {label:"중퇴하고 모험가가 된다",action:()=>{game.career=rankLabel();game.phase="adventurer";present("아카데미 중퇴","아카데미를 떠나 모험가의 길을 선택했습니다.",[]);nextAfterResult(renderEvent)}}
-  ]);
 }
 function professorEvent(){
   let a=Math.floor(Math.random()*6),b;do{b=Math.floor(Math.random()*6)}while(a===b);
