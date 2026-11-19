@@ -31,7 +31,7 @@
     <section id="game" class="hidden">
       <div class="topbar">
         <div><span id="ageLabel">15세</span><span class="dot">·</span><span id="careerLabel">초급 모험가</span></div>
-        <div class="resources"><span>금화 <b id="goldLabel">0</b></span><span>명성 <b id="fameLabel">0</b></span></div>
+        <div class="resources"><span>체력 <b id="hpLabel">100</b>/100</span><span>금화 <b id="goldLabel">0</b></span><span>명성 <b id="fameLabel">0</b></span></div>
       </div>
       <nav class="tabs">
         <button class="tab active" data-tab="event">이벤트</button>
@@ -54,14 +54,23 @@
       <section id="statusView" class="panel view hidden">
         <div class="event-kicker">CHARACTER STATUS</div>
         <h2>내 능력치</h2>
+        <div class="extra-stats">
+          <div><span>모험가 등급</span><b id="rankLabel">견습 모험가</b></div>
+          <div><span>남은 연간 활동</span><b id="activityLabel">3/3</b></div>
+        </div>
+        <h3 class="subhead">기본 능력치</h3>
         <div id="gameStats" class="stats-grid"></div>
+        <h3 class="subhead">장비 적용 능력치</h3>
+        <div id="effectiveStats" class="stats-grid"></div>
+        <h3 class="subhead">보유 장비 (최대 6개)</h3>
+        <div id="inventoryList" class="inventory-list"></div>
         <div class="extra-stats">
           <div><span>나이</span><b id="statusAge">15세</b></div>
           <div><span>직업</span><b id="statusJob">-</b></div>
           <div><span>금화</span><b id="statusGold">0</b></div>
           <div><span>명성</span><b id="statusFame">0</b></div>
         </div>
-        <p class="hint">이벤트 화면으로 돌아가도 진행 상황은 유지됩니다.</p>
+        <p class="hint">장비 능력치는 기본 능력치 60 제한과 별도로 적용됩니다. 장비는 최대 6개까지 보유할 수 있습니다.</p>
       </section>
     </section>
 
