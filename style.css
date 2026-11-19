@@ -17,3 +17,7 @@
 .gear b{font-size:13px;color:var(--text)}
 .gear span{font-size:12px;color:var(--muted);line-height:1.5}
 .resources{flex-wrap:wrap}
+
+.choice-main{display:block;font-weight:700}
+.choice-meta{display:block;margin-top:5px;font-size:.82rem;opacity:.82;font-weight:600}
+.dropout-choice{margin-top:12px;border:1px solid #b85b5b!important;color:#ffd5d5!important;background:rgba(145,45,45,.16)!important}
